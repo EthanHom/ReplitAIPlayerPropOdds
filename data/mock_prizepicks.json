@@ -2,30 +2,54 @@
     "props": [
         {
             "player": "Walker Kessler",
-            "team": "Utah Jazz",
-            "opponent": "Washington Wizards",
+            "team": "Washington Wizards",
+            "opponent": "Utah Jazz",
+            "nba": true,
             "game_time": "2025-03-19T19:00:00",
-            "stat_type": "rebounds",
-            "line": 25.0,
-            "over_under": "over"
+            "stat_type": "Points",
+            "line": 25,
+            "over_under": "Over",
+            "assists": true
         },
         {
             "player": "Anthony Edwards",
             "team": "Minnesota Timberwolves",
             "opponent": "Denver Nuggets",
+            "nba": true,
             "game_time": "2025-03-19T19:00:00",
-            "stat_type": "assists",
+            "stat_type": "Assists",
             "line": 4.5,
-            "over_under": "over"
+            "over_under": "Over"
         },
         {
             "player": "Chet Holmgren",
             "team": "Oklahoma City Thunder",
             "opponent": "Utah Jazz",
+            "nba": true,
             "game_time": "2025-03-19T19:00:00",
-            "stat_type": "points",
+            "stat_type": "Points",
             "line": 28.5,
-            "over_under": "under"
+            "over_under": "Under"
+        },
+        {
+            "player": "Devin Vassell",
+            "team": "San Antonio Spurs",
+            "opponent": "Houston Rockets",
+            "nba": true,
+            "game_time": "2025-03-19T19:00:00",
+            "stat_type": "Points",
+            "line": 4.5,
+            "over_under": "Over"
+        },
+        {
+            "player": "OG Anunoby",
+            "team": "San Antonio Spurs",
+            "opponent": "Houston Rockets",
+            "nba": true,
+            "game_time": "2025-03-19T19:00:00",
+            "stat_type": "Points",
+            "line": 4.5,
+            "over_under": "Over"
         }
     ]
 }
