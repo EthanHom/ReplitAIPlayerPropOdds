@@ -1,21 +1,30 @@
 {
     "props": [
         {
-            "player": "LeBron James",
-            "stat_type": "points",
-            "line": 27.5,
-            "over_under": "over"
-        },
-        {
-            "player": "Stephen Curry",
-            "stat_type": "points",
-            "line": 29.5,
-            "over_under": "over"
-        },
-        {
-            "player": "Kevin Durant",
+            "player": "Walker Kessler",
+            "team": "Utah Jazz",
+            "opponent": "Washington Wizards",
+            "game_time": "2025-03-19T19:00:00",
             "stat_type": "rebounds",
-            "line": 7.5,
+            "line": 25.0,
+            "over_under": "over"
+        },
+        {
+            "player": "Anthony Edwards",
+            "team": "Minnesota Timberwolves",
+            "opponent": "Denver Nuggets",
+            "game_time": "2025-03-19T19:00:00",
+            "stat_type": "assists",
+            "line": 4.5,
+            "over_under": "over"
+        },
+        {
+            "player": "Chet Holmgren",
+            "team": "Oklahoma City Thunder",
+            "opponent": "Utah Jazz",
+            "game_time": "2025-03-19T19:00:00",
+            "stat_type": "points",
+            "line": 28.5,
             "over_under": "under"
         }
     ]

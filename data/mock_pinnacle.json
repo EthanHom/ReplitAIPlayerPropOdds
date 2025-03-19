@@ -1,23 +1,29 @@
 {
     "odds": [
         {
-            "player": "LeBron James",
-            "stat_type": "points",
-            "line": 27.5,
+            "player": "Walker Kessler",
+            "team": "Utah Jazz",
+            "opponent": "Washington Wizards",
+            "stat_type": "rebounds",
+            "line": 25.0,
             "over_odds": -110,
             "under_odds": -110
         },
         {
-            "player": "Stephen Curry",
-            "stat_type": "points",
-            "line": 29.5,
+            "player": "Anthony Edwards",
+            "team": "Minnesota Timberwolves",
+            "opponent": "Denver Nuggets",
+            "stat_type": "assists",
+            "line": 4.5,
             "over_odds": -115,
             "under_odds": -105
         },
         {
-            "player": "Kevin Durant",
-            "stat_type": "rebounds",
-            "line": 7.5,
+            "player": "Chet Holmgren",
+            "team": "Oklahoma City Thunder",
+            "opponent": "Utah Jazz",
+            "stat_type": "points",
+            "line": 28.5,
             "over_odds": -108,
             "under_odds": -112
         }

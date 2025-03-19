@@ -1,7 +1,7 @@
 import streamlit as st
 import json
 import pandas as pd
-from utils.odds_calculator import calculate_edge, get_recommendation
+from utils.odds_calculator import calculate_edge, get_recommendation, american_to_probability
 
 def load_mock_data():
     """Load mock data from JSON files"""
@@ -19,79 +19,87 @@ def load_mock_data():
         return None, None
 
 def main():
-    st.title("PrizePicks vs Pinnacle Odds Comparison")
-    
+    st.set_page_config(layout="wide")
+    st.title("NBA Props Analyzer")
+
     # Load data
     prizepicks_data, pinnacle_data = load_mock_data()
-    
+
     if not prizepicks_data or not pinnacle_data:
         return
 
-    # Create filters
+    # Create filters in sidebar
     st.sidebar.header("Filters")
-    
-    # Get unique players
-    all_players = list(set([prop['player'] for prop in prizepicks_data['props']]))
-    selected_player = st.sidebar.selectbox("Select Player", all_players)
-    
-    # Get unique stat types for selected player
-    stat_types = list(set([
-        prop['stat_type'] for prop in prizepicks_data['props']
-        if prop['player'] == selected_player
-    ]))
-    selected_stat = st.sidebar.selectbox("Select Stat Type", stat_types)
 
-    # Find matching propositions
-    prizepicks_prop = next(
-        (prop for prop in prizepicks_data['props']
-         if prop['player'] == selected_player and prop['stat_type'] == selected_stat),
-        None
-    )
-    
-    pinnacle_prop = next(
-        (prop for prop in pinnacle_data['odds']
-         if prop['player'] == selected_player and prop['stat_type'] == selected_stat),
-        None
+    # Filter by stat type
+    all_stat_types = list(set([prop['stat_type'] for prop in prizepicks_data['props']]))
+    selected_stats = st.sidebar.multiselect(
+        "Select Stat Types",
+        all_stat_types,
+        default=all_stat_types
     )
 
-    if prizepicks_prop and pinnacle_prop:
-        st.header(f"{selected_player} - {selected_stat.title()}")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.subheader("PrizePicks")
-            st.write(f"Line: {prizepicks_prop['line']}")
-            st.write(f"Type: {prizepicks_prop['over_under'].title()}")
-            st.write("Fixed Odds: -120")
+    # Create the main table
+    data_rows = []
+    for pp_prop in prizepicks_data['props']:
+        if pp_prop['stat_type'] not in selected_stats:
+            continue
 
-        with col2:
-            st.subheader("Pinnacle")
-            st.write(f"Line: {pinnacle_prop['line']}")
-            st.write(f"Over Odds: {pinnacle_prop['over_odds']}")
-            st.write(f"Under Odds: {pinnacle_prop['under_odds']}")
+        # Find matching Pinnacle prop
+        pinn_prop = next(
+            (prop for prop in pinnacle_data['odds']
+             if prop['player'] == pp_prop['player'] and prop['stat_type'] == pp_prop['stat_type']),
+            None
+        )
 
-        # Calculate edge
-        relevant_pinnacle_odds = (
-            pinnacle_prop['over_odds'] if prizepicks_prop['over_under'] == 'over'
-            else pinnacle_prop['under_odds']
+        if pinn_prop:
+            # Calculate implied probability and edge
+            pinn_odds = pinn_prop['over_odds'] if pp_prop['over_under'] == 'over' else pinn_prop['under_odds']
+            implied_prob = american_to_probability(pinn_odds) * 100
+            edge = calculate_edge(pp_prop['line'], pinn_odds)
+            recommendation, status = get_recommendation(edge)
+
+            data_rows.append({
+                'Track': '',  # Empty column for tracking
+                'Player': pp_prop['player'],
+                'O/U': pp_prop['over_under'].upper(),
+                'Stat': f"{pp_prop['stat_type'].title()} {pp_prop['line']}",
+                'Chance': f"{implied_prob:.1f}%",
+                'PrizePicks': '-120',
+                'Pinnacle': pinn_odds,
+                'Edge': f"{edge:.1f}%",
+                'Status': status
+            })
+
+    if data_rows:
+        df = pd.DataFrame(data_rows)
+
+        # Style the dataframe
+        def color_status(val):
+            if val == 'success':
+                return 'background-color: #90EE90'
+            elif val == 'error':
+                return 'background-color: #FFB6C6'
+            elif val == 'warning':
+                return 'background-color: #FFE5B4'
+            return ''
+
+        styled_df = df.style.apply(lambda x: ['background-color: #1E1E1E' for _ in x], axis=0)\
+                          .apply(lambda x: [color_status(x['Status']) if i == 7 else '' for i in range(len(x))], axis=1)
+
+        # Display the table
+        st.dataframe(
+            styled_df,
+            hide_index=True,
+            column_config={
+                'Track': st.column_config.CheckboxColumn(default=False),
+                'Edge': st.column_config.NumberColumn(format="%.1f%%"),
+                'Status': None  # Hide status column used for styling
+            },
+            use_container_width=True
         )
-        
-        edge = calculate_edge(prizepicks_prop['line'], relevant_pinnacle_odds)
-        recommendation, status = get_recommendation(edge)
-        
-        st.markdown("---")
-        st.subheader("Analysis")
-        st.metric(
-            label="Edge",
-            value=f"{edge}%",
-            delta=recommendation
-        )
-        
-        st.info(f"Recommendation: {recommendation}")
-        
     else:
-        st.warning("No matching proposition found for selected criteria")
+        st.warning("No props found matching the selected criteria")
 
 if __name__ == "__main__":
     main()
