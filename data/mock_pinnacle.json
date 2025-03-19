@@ -1,0 +1,25 @@
+{
+    "odds": [
+        {
+            "player": "LeBron James",
+            "stat_type": "points",
+            "line": 27.5,
+            "over_odds": -110,
+            "under_odds": -110
+        },
+        {
+            "player": "Stephen Curry",
+            "stat_type": "points",
+            "line": 29.5,
+            "over_odds": -115,
+            "under_odds": -105
+        },
+        {
+            "player": "Kevin Durant",
+            "stat_type": "rebounds",
+            "line": 7.5,
+            "over_odds": -108,
+            "under_odds": -112
+        }
+    ]
+}
