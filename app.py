@@ -1,7 +1,20 @@
 import streamlit as st
 import json
 import pandas as pd
+import time
 from utils.odds_calculator import calculate_edge, get_recommendation, american_to_probability, remove_vig
+from utils.scraper import fetch_prizepicks_props, fetch_pinnacle_odds
+
+def load_live_data():
+    """Load live data from PrizePicks and Pinnacle"""
+    try:
+        prizepicks_data = fetch_prizepicks_props()
+        pinnacle_data = fetch_pinnacle_odds()
+        return prizepicks_data, pinnacle_data
+    except Exception as e:
+        st.error(f"Error loading live data: {str(e)}")
+        # Fallback to mock data for development
+        return load_mock_data()
 
 def load_mock_data():
     """Load mock data from JSON files"""
@@ -23,8 +36,20 @@ def main():
 
     st.title("NBA Props Analyzer")
 
+    # Add refresh control
+    refresh_interval = st.sidebar.slider("Refresh interval (seconds)", 
+                                       min_value=30, 
+                                       max_value=300, 
+                                       value=60)
+
+    auto_refresh = st.sidebar.checkbox("Auto-refresh data")
+
+    if auto_refresh:
+        time.sleep(refresh_interval)
+        st.rerun()
+
     # Load data
-    prizepicks_data, pinnacle_data = load_mock_data()
+    prizepicks_data, pinnacle_data = load_live_data()
 
     if not prizepicks_data or not pinnacle_data:
         st.error("Failed to load data")
