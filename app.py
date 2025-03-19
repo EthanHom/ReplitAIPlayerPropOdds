@@ -1,7 +1,19 @@
 import streamlit as st
 import json
 import pandas as pd
-from utils.odds_calculator import calculate_edge, get_recommendation, american_to_probability
+from utils.odds_calculator import calculate_edge, get_recommendation, american_to_probability, remove_vig
+from utils.scraper import fetch_prizepicks_props, fetch_pinnacle_odds
+
+def load_data():
+    """Load live data from PrizePicks and Pinnacle"""
+    try:
+        prizepicks_data = fetch_prizepicks_props()
+        pinnacle_data = fetch_pinnacle_odds()
+        return prizepicks_data, pinnacle_data
+    except Exception as e:
+        st.error(f"Error loading data: {str(e)}")
+        # Fallback to mock data for development
+        return load_mock_data()
 
 def load_mock_data():
     """Load mock data from JSON files"""
@@ -11,19 +23,21 @@ def load_mock_data():
         with open('data/mock_pinnacle.json', 'r') as f:
             pinnacle_data = json.load(f)
         return prizepicks_data, pinnacle_data
-    except FileNotFoundError:
-        st.error("Error: Mock data files not found")
-        return None, None
-    except json.JSONDecodeError:
-        st.error("Error: Invalid JSON format in mock data files")
+    except Exception as e:
+        st.error(f"Error loading mock data: {str(e)}")
         return None, None
 
 def main():
     st.set_page_config(layout="wide")
     st.title("NBA Props Analyzer")
 
+    # Add auto-refresh option
+    auto_refresh = st.sidebar.checkbox("Auto-refresh data", value=False)
+    if auto_refresh:
+        st.experimental_rerun()
+
     # Load data
-    prizepicks_data, pinnacle_data = load_mock_data()
+    prizepicks_data, pinnacle_data = load_data()
 
     if not prizepicks_data or not pinnacle_data:
         return
@@ -53,10 +67,15 @@ def main():
         )
 
         if pinn_prop:
-            # Calculate implied probability and edge
-            pinn_odds = pinn_prop['over_odds'] if pp_prop['over_under'] == 'over' else pinn_prop['under_odds']
-            implied_prob = american_to_probability(pinn_odds) * 100
-            edge = calculate_edge(pp_prop['line'], pinn_odds)
+            # Calculate fair odds (no vig)
+            fair_over, fair_under = remove_vig(pinn_prop['over_odds'], pinn_prop['under_odds'])
+
+            # Use fair odds for edge calculation
+            relevant_fair_odds = fair_over if pp_prop['over_under'] == 'over' else fair_under
+            edge = calculate_edge(pp_prop['line'], relevant_fair_odds)
+
+            # Calculate implied probability
+            implied_prob = american_to_probability(relevant_fair_odds) * 100
             recommendation, status = get_recommendation(edge)
 
             data_rows.append({
@@ -66,7 +85,7 @@ def main():
                 'Stat': f"{pp_prop['stat_type'].title()} {pp_prop['line']}",
                 'Chance': f"{implied_prob:.1f}%",
                 'PrizePicks': '-120',
-                'Pinnacle': pinn_odds,
+                'Fair Odds': relevant_fair_odds,
                 'Edge': f"{edge:.1f}%",
                 'Status': status
             })
