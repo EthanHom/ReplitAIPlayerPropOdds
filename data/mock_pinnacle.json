@@ -22,7 +22,7 @@
             "player": "Chet Holmgren",
             "team": "Oklahoma City Thunder",
             "opponent": "Utah Jazz",
-            "stat_type": "Points",
+            "stat_type": "Rebounds",
             "line": 28.5,
             "over_odds": -110,
             "under_odds": -110
@@ -31,8 +31,8 @@
             "player": "Devin Vassell",
             "team": "San Antonio Spurs",
             "opponent": "Houston Rockets",
-            "stat_type": "Points",
-            "line": 4.5,
+            "stat_type": "Points+Assists",
+            "line": 24.5,
             "over_odds": -138,
             "under_odds": -138
         },
@@ -40,10 +40,28 @@
             "player": "OG Anunoby",
             "team": "San Antonio Spurs",
             "opponent": "Houston Rockets",
-            "stat_type": "Points",
-            "line": 4.5,
-            "over_odds": -138,
-            "under_odds": -138
+            "stat_type": "Points+Rebounds",
+            "line": 28.5,
+            "over_odds": -115,
+            "under_odds": -115
+        },
+        {
+            "player": "Mitchell Robinson",
+            "team": "New York Knicks",
+            "opponent": "San Antonio Spurs",
+            "stat_type": "Rebounds+Assists",
+            "line": 12.5,
+            "over_odds": -105,
+            "under_odds": -105
+        },
+        {
+            "player": "Pascal Siakam",
+            "team": "Indiana Pacers",
+            "opponent": "Detroit Pistons",
+            "stat_type": "Points+Rebounds+Assists",
+            "line": 35.5,
+            "over_odds": -122,
+            "under_odds": -122
         }
     ]
 }

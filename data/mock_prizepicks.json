@@ -8,8 +8,7 @@
             "game_time": "2025-03-19T19:00:00",
             "stat_type": "Points",
             "line": 25,
-            "over_under": "Over",
-            "assists": true
+            "over_under": "Over"
         },
         {
             "player": "Anthony Edwards",
@@ -27,7 +26,7 @@
             "opponent": "Utah Jazz",
             "nba": true,
             "game_time": "2025-03-19T19:00:00",
-            "stat_type": "Points",
+            "stat_type": "Rebounds",
             "line": 28.5,
             "over_under": "Under"
         },
@@ -37,8 +36,8 @@
             "opponent": "Houston Rockets",
             "nba": true,
             "game_time": "2025-03-19T19:00:00",
-            "stat_type": "Points",
-            "line": 4.5,
+            "stat_type": "Points+Assists",
+            "line": 24.5,
             "over_under": "Over"
         },
         {
@@ -47,8 +46,28 @@
             "opponent": "Houston Rockets",
             "nba": true,
             "game_time": "2025-03-19T19:00:00",
-            "stat_type": "Points",
-            "line": 4.5,
+            "stat_type": "Points+Rebounds",
+            "line": 28.5,
+            "over_under": "Over"
+        },
+        {
+            "player": "Mitchell Robinson",
+            "team": "New York Knicks",
+            "opponent": "San Antonio Spurs",
+            "nba": true,
+            "game_time": "2025-03-19T19:00:00",
+            "stat_type": "Rebounds+Assists",
+            "line": 12.5,
+            "over_under": "Under"
+        },
+        {
+            "player": "Pascal Siakam",
+            "team": "Indiana Pacers",
+            "opponent": "Detroit Pistons",
+            "nba": true,
+            "game_time": "2025-03-19T19:00:00",
+            "stat_type": "Points+Rebounds+Assists",
+            "line": 35.5,
             "over_under": "Over"
         }
     ]

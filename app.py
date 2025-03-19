@@ -18,14 +18,11 @@ def load_data():
 def load_mock_data():
     """Load mock data from JSON files"""
     try:
-        st.write("Loading mock data...")  # Debug log
         with open('data/mock_prizepicks.json', 'r') as f:
             prizepicks_data = json.load(f)
-            st.write(f"PrizePicks data loaded: {len(prizepicks_data['props'])} props found")  # Debug log
 
         with open('data/mock_pinnacle.json', 'r') as f:
             pinnacle_data = json.load(f)
-            st.write(f"Pinnacle data loaded: {len(pinnacle_data['odds'])} odds found")  # Debug log
 
         return prizepicks_data, pinnacle_data
     except Exception as e:
@@ -45,18 +42,11 @@ def main():
         st.error("Failed to load data")
         return
 
-    # Display raw data for debugging
-    with st.expander("Debug Data"):
-        st.write("PrizePicks Data:", prizepicks_data)
-        st.write("Pinnacle Data:", pinnacle_data)
-
     # Create filters in sidebar
     st.sidebar.header("Filters")
 
     # Filter by stat type
     all_stat_types = list(set([prop['stat_type'] for prop in prizepicks_data['props']]))
-    st.write(f"Available stat types: {all_stat_types}")  # Debug log
-
     selected_stats = st.sidebar.multiselect(
         "Select Stat Types",
         all_stat_types,
@@ -80,13 +70,13 @@ def main():
             # Calculate fair odds (no vig)
             fair_over, fair_under = remove_vig(pinn_prop['over_odds'], pinn_prop['under_odds'])
 
-            # Use fair odds for edge calculation
-            relevant_fair_odds = fair_over if pp_prop['over_under'] == 'over' else fair_under
-            edge = calculate_edge(pp_prop['line'], relevant_fair_odds)
+            # Get the relevant odds based on over/under selection
+            raw_odds = pinn_prop['over_odds'] if pp_prop['over_under'].lower() == 'over' else pinn_prop['under_odds']
+            relevant_fair_odds = fair_over if pp_prop['over_under'].lower() == 'over' else fair_under
 
-            # Calculate implied probability
+            # Calculate edge and implied probability
+            edge = calculate_edge(pp_prop['line'], relevant_fair_odds)
             implied_prob = american_to_probability(relevant_fair_odds) * 100
-            recommendation, status = get_recommendation(edge)
 
             data_rows.append({
                 'Track': False,  # Checkbox column
@@ -97,9 +87,9 @@ def main():
                 'Stat': f"{pp_prop['stat_type']} {pp_prop['line']}",
                 'Chance': f"{implied_prob:.1f}%",
                 'PrizePicks': '-120',
+                'Pinnacle': raw_odds,
                 'Fair Odds': relevant_fair_odds,
-                'Edge': edge,
-                'Status': status
+                'Edge': edge
             })
 
     if data_rows:
@@ -109,8 +99,8 @@ def main():
         column_config = {
             'Track': st.column_config.CheckboxColumn(default=False),
             'Edge': st.column_config.NumberColumn(format="%.1f%%"),
-            'Fair Odds': st.column_config.NumberColumn(format="%.0f"),
-            'Status': None  # Hide status column used for styling
+            'Pinnacle': st.column_config.NumberColumn(format="%.0f"),
+            'Fair Odds': st.column_config.NumberColumn(format="%.0f")
         }
 
         # Display the table
@@ -122,9 +112,6 @@ def main():
         )
     else:
         st.warning("No props found matching the selected criteria")
-        st.write("Debug info:")
-        st.write(f"Selected stats: {selected_stats}")
-        st.write(f"Number of props: {len(prizepicks_data['props'])}")
 
 if __name__ == "__main__":
     main()
