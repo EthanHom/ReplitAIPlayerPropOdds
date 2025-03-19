@@ -62,12 +62,11 @@ def main():
             fair_over_prob = american_to_probability(fair_over) * 100
             fair_under_prob = american_to_probability(fair_under) * 100
 
-            # Get the relevant odds and probabilities based on over/under selection
-            raw_odds = pinn_prop['over_odds'] if pp_prop['over_under'].lower() == 'over' else pinn_prop['under_odds']
+            # Get the relevant probability based on over/under selection
             fair_prob = fair_over_prob if pp_prop['over_under'].lower() == 'over' else fair_under_prob
+            relevant_fair_odds = fair_over if pp_prop['over_under'].lower() == 'over' else fair_under
 
             # Calculate edge using fair odds
-            relevant_fair_odds = fair_over if pp_prop['over_under'].lower() == 'over' else fair_under
             edge = calculate_edge(pp_prop['line'], relevant_fair_odds)
 
             data_rows.append({
@@ -78,7 +77,8 @@ def main():
                 'O/U': pp_prop['over_under'].upper(),
                 'Stat': f"{pp_prop['stat_type']} {pp_prop['line']}",
                 'PrizePicks': '-120',
-                'Pinnacle': raw_odds,
+                'Over': pinn_prop['over_odds'],
+                'Under': pinn_prop['under_odds'],
                 'Fair %': fair_prob,
                 'Edge': edge
             })
@@ -91,7 +91,8 @@ def main():
             'Track': st.column_config.CheckboxColumn(default=False),
             'Fair %': st.column_config.NumberColumn(format="%.1f%%"),
             'Edge': st.column_config.NumberColumn(format="%.1f%%"),
-            'Pinnacle': st.column_config.NumberColumn(format="%.0f")
+            'Over': st.column_config.NumberColumn(format="%.0f"),
+            'Under': st.column_config.NumberColumn(format="%.0f")
         }
 
         # Display the table
