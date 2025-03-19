@@ -28,13 +28,24 @@ def load_mock_data():
         return None, None
 
 def main():
-    st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide", page_title="NBA Props Analyzer")
+
+    # Custom CSS for dark theme
+    st.markdown("""
+    <style>
+    .stApp {
+        background-color: #0E1117;
+        color: #FAFAFA;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     st.title("NBA Props Analyzer")
 
     # Add auto-refresh option
     auto_refresh = st.sidebar.checkbox("Auto-refresh data", value=False)
     if auto_refresh:
-        st.experimental_rerun()
+        st.rerun()  # Using st.rerun() instead of experimental_rerun
 
     # Load data
     prizepicks_data, pinnacle_data = load_data()
@@ -79,43 +90,52 @@ def main():
             recommendation, status = get_recommendation(edge)
 
             data_rows.append({
-                'Track': '',  # Empty column for tracking
+                'Track': False,  # Checkbox column
                 'Player': pp_prop['player'],
+                'Team': pp_prop['team'],
+                'Opponent': pp_prop['opponent'],
                 'O/U': pp_prop['over_under'].upper(),
                 'Stat': f"{pp_prop['stat_type'].title()} {pp_prop['line']}",
                 'Chance': f"{implied_prob:.1f}%",
                 'PrizePicks': '-120',
                 'Fair Odds': relevant_fair_odds,
-                'Edge': f"{edge:.1f}%",
+                'Edge': edge,
                 'Status': status
             })
 
     if data_rows:
         df = pd.DataFrame(data_rows)
 
-        # Style the dataframe
-        def color_status(val):
-            if val == 'success':
+        # Configure column settings
+        column_config = {
+            'Track': st.column_config.CheckboxColumn(default=False),
+            'Edge': st.column_config.NumberColumn(format="%.1f%%"),
+            'Fair Odds': st.column_config.NumberColumn(format="%.0f"),
+            'Status': None  # Hide status column used for styling
+        }
+
+        # Apply styling
+        def highlight_edges(val):
+            if val > 5:
                 return 'background-color: #90EE90'
-            elif val == 'error':
+            elif val > 2:
+                return 'background-color: #98FB98'
+            elif val < -5:
                 return 'background-color: #FFB6C6'
-            elif val == 'warning':
-                return 'background-color: #FFE5B4'
+            elif val < -2:
+                return 'background-color: #FFE4E1'
             return ''
 
-        styled_df = df.style.apply(lambda x: ['background-color: #1E1E1E' for _ in x], axis=0)\
-                          .apply(lambda x: [color_status(x['Status']) if i == 7 else '' for i in range(len(x))], axis=1)
+        styled_df = df.style\
+            .apply(lambda x: [''] * len(x) if x.name != 'Edge' else [highlight_edges(v) for v in x], axis=1)\
+            .hide(axis='index')
 
         # Display the table
         st.dataframe(
             styled_df,
-            hide_index=True,
-            column_config={
-                'Track': st.column_config.CheckboxColumn(default=False),
-                'Edge': st.column_config.NumberColumn(format="%.1f%%"),
-                'Status': None  # Hide status column used for styling
-            },
-            use_container_width=True
+            column_config=column_config,
+            use_container_width=True,
+            hide_index=True
         )
     else:
         st.warning("No props found matching the selected criteria")
