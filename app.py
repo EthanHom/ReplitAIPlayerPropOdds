@@ -2,18 +2,6 @@ import streamlit as st
 import json
 import pandas as pd
 from utils.odds_calculator import calculate_edge, get_recommendation, american_to_probability, remove_vig
-from utils.scraper import fetch_prizepicks_props, fetch_pinnacle_odds
-
-def load_data():
-    """Load live data from PrizePicks and Pinnacle"""
-    try:
-        prizepicks_data = fetch_prizepicks_props()
-        pinnacle_data = fetch_pinnacle_odds()
-        return prizepicks_data, pinnacle_data
-    except Exception as e:
-        st.error(f"Error loading data: {str(e)}")
-        # Fallback to mock data for development
-        return load_mock_data()
 
 def load_mock_data():
     """Load mock data from JSON files"""
@@ -70,13 +58,17 @@ def main():
             # Calculate fair odds (no vig)
             fair_over, fair_under = remove_vig(pinn_prop['over_odds'], pinn_prop['under_odds'])
 
-            # Get the relevant odds based on over/under selection
-            raw_odds = pinn_prop['over_odds'] if pp_prop['over_under'].lower() == 'over' else pinn_prop['under_odds']
-            relevant_fair_odds = fair_over if pp_prop['over_under'].lower() == 'over' else fair_under
+            # Convert fair odds to probabilities
+            fair_over_prob = american_to_probability(fair_over) * 100
+            fair_under_prob = american_to_probability(fair_under) * 100
 
-            # Calculate edge and implied probability
+            # Get the relevant odds and probabilities based on over/under selection
+            raw_odds = pinn_prop['over_odds'] if pp_prop['over_under'].lower() == 'over' else pinn_prop['under_odds']
+            fair_prob = fair_over_prob if pp_prop['over_under'].lower() == 'over' else fair_under_prob
+
+            # Calculate edge using fair odds
+            relevant_fair_odds = fair_over if pp_prop['over_under'].lower() == 'over' else fair_under
             edge = calculate_edge(pp_prop['line'], relevant_fair_odds)
-            implied_prob = american_to_probability(relevant_fair_odds) * 100
 
             data_rows.append({
                 'Track': False,  # Checkbox column
@@ -85,10 +77,9 @@ def main():
                 'Opponent': pp_prop['opponent'],
                 'O/U': pp_prop['over_under'].upper(),
                 'Stat': f"{pp_prop['stat_type']} {pp_prop['line']}",
-                'Chance': f"{implied_prob:.1f}%",
                 'PrizePicks': '-120',
                 'Pinnacle': raw_odds,
-                'Fair Odds': relevant_fair_odds,
+                'Fair %': fair_prob,
                 'Edge': edge
             })
 
@@ -98,9 +89,9 @@ def main():
         # Configure column settings
         column_config = {
             'Track': st.column_config.CheckboxColumn(default=False),
+            'Fair %': st.column_config.NumberColumn(format="%.1f%%"),
             'Edge': st.column_config.NumberColumn(format="%.1f%%"),
-            'Pinnacle': st.column_config.NumberColumn(format="%.0f"),
-            'Fair Odds': st.column_config.NumberColumn(format="%.0f")
+            'Pinnacle': st.column_config.NumberColumn(format="%.0f")
         }
 
         # Display the table
