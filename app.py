@@ -18,46 +18,45 @@ def load_data():
 def load_mock_data():
     """Load mock data from JSON files"""
     try:
+        st.write("Loading mock data...")  # Debug log
         with open('data/mock_prizepicks.json', 'r') as f:
             prizepicks_data = json.load(f)
+            st.write(f"PrizePicks data loaded: {len(prizepicks_data['props'])} props found")  # Debug log
+
         with open('data/mock_pinnacle.json', 'r') as f:
             pinnacle_data = json.load(f)
+            st.write(f"Pinnacle data loaded: {len(pinnacle_data['odds'])} odds found")  # Debug log
+
         return prizepicks_data, pinnacle_data
     except Exception as e:
         st.error(f"Error loading mock data: {str(e)}")
         return None, None
 
 def main():
+    # Page config
     st.set_page_config(layout="wide", page_title="NBA Props Analyzer")
-
-    # Custom CSS for dark theme
-    st.markdown("""
-    <style>
-    .stApp {
-        background-color: #0E1117;
-        color: #FAFAFA;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
     st.title("NBA Props Analyzer")
 
-    # Add auto-refresh option
-    auto_refresh = st.sidebar.checkbox("Auto-refresh data", value=False)
-    if auto_refresh:
-        st.rerun()  # Using st.rerun() instead of experimental_rerun
-
     # Load data
-    prizepicks_data, pinnacle_data = load_data()
+    prizepicks_data, pinnacle_data = load_mock_data()
 
     if not prizepicks_data or not pinnacle_data:
+        st.error("Failed to load data")
         return
+
+    # Display raw data for debugging
+    with st.expander("Debug Data"):
+        st.write("PrizePicks Data:", prizepicks_data)
+        st.write("Pinnacle Data:", pinnacle_data)
 
     # Create filters in sidebar
     st.sidebar.header("Filters")
 
     # Filter by stat type
     all_stat_types = list(set([prop['stat_type'] for prop in prizepicks_data['props']]))
+    st.write(f"Available stat types: {all_stat_types}")  # Debug log
+
     selected_stats = st.sidebar.multiselect(
         "Select Stat Types",
         all_stat_types,
@@ -95,7 +94,7 @@ def main():
                 'Team': pp_prop['team'],
                 'Opponent': pp_prop['opponent'],
                 'O/U': pp_prop['over_under'].upper(),
-                'Stat': f"{pp_prop['stat_type'].title()} {pp_prop['line']}",
+                'Stat': f"{pp_prop['stat_type']} {pp_prop['line']}",
                 'Chance': f"{implied_prob:.1f}%",
                 'PrizePicks': '-120',
                 'Fair Odds': relevant_fair_odds,
@@ -114,31 +113,18 @@ def main():
             'Status': None  # Hide status column used for styling
         }
 
-        # Apply styling
-        def highlight_edges(val):
-            if val > 5:
-                return 'background-color: #90EE90'
-            elif val > 2:
-                return 'background-color: #98FB98'
-            elif val < -5:
-                return 'background-color: #FFB6C6'
-            elif val < -2:
-                return 'background-color: #FFE4E1'
-            return ''
-
-        styled_df = df.style\
-            .apply(lambda x: [''] * len(x) if x.name != 'Edge' else [highlight_edges(v) for v in x], axis=1)\
-            .hide(axis='index')
-
         # Display the table
         st.dataframe(
-            styled_df,
+            df,
             column_config=column_config,
             use_container_width=True,
             hide_index=True
         )
     else:
         st.warning("No props found matching the selected criteria")
+        st.write("Debug info:")
+        st.write(f"Selected stats: {selected_stats}")
+        st.write(f"Number of props: {len(prizepicks_data['props'])}")
 
 if __name__ == "__main__":
     main()
